@@ -1,0 +1,35 @@
+If:
+  PathMatch: .*(\.(c|h)pp|\.cuh?)
+CompileFlags:
+  Compiler: /opt/cuda/bin/nvcc
+
+---
+
+CompileFlags:
+  Add:
+    - "--cuda-path=/opt/cuda"
+    - "-ferror-limit=0"
+    - "-std=c++20"
+    - "--cuda-gpu-arch=sm_75"
+  Remove:
+    - "-Xfatbin*"
+    - "-gencode*"
+    - "--generate-code*"
+    - "-ccbin*"
+    - "--options-file"
+    - "-rdc=*"
+    - "-arch=*"
+    - "-Xcompiler=*"
+    - "--compiler-options*"
+    - "--expt-extended-lambda"
+    - "--expt-relaxed-constexpr"
+    - "-forward-unknown-to-host-compiler"
+    - "-Werror=cross-execution-space-call"
+Hover:
+  ShowAKA: No
+InlayHints:
+  Enabled: No
+Diagnostics:
+  Suppress:
+    - "variadic_device_fn"
+    - "attributes_not_allowed"
