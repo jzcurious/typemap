@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(typemap_tests LANGUAGES CXX)
+project(staticmap_tests LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -17,20 +17,20 @@ file(GLOB_RECURSE SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 
-add_executable(typemap_tests ${SRC})
+add_executable(staticmap_tests ${SRC})
 
-target_compile_features(typemap_tests INTERFACE
+target_compile_features(staticmap_tests INTERFACE
     cxx_std_20
 )
 
-target_compile_options(typemap_tests INTERFACE
+target_compile_options(staticmap_tests INTERFACE
     -Wall -O3
 )
 
-target_link_libraries(typemap_tests PRIVATE
-    typemap
+target_link_libraries(staticmap_tests PRIVATE
+    staticmap
     GTest::gtest_main
 )
 
 enable_testing()
-gtest_discover_tests(typemap_tests)
+gtest_discover_tests(staticmap_tests)

@@ -1,5 +1,5 @@
-#ifndef TYPEMAP_ITEM_HPP
-#define TYPEMAP_ITEM_HPP
+#ifndef STATICMAP_ITEM_HPP
+#define STATICMAP_ITEM_HPP
 
 #include <concepts>
 
@@ -23,4 +23,4 @@ struct Item {
 
 }  // namespace tmap
 
-#endif  // TYPEMAP_ITEM_HPP
+#endif  // STATICMAP_ITEM_HPP
