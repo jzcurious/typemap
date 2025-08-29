@@ -1,6 +1,8 @@
 #ifndef STATICMAP_STATICMAP_HPP
 #define STATICMAP_STATICMAP_HPP
 
+#include "./item.hpp"  // IWYU pragma: export
+
 #include "./item_kind.hpp"
 #include "./iterator.hpp"
 
@@ -26,6 +28,13 @@ struct StaticMap {
   items_t items_;
 
  public:
+  template <ItemKind... _ItemT>
+  StaticMap(_ItemT&&... items)
+      : items_(std::forward<_ItemT>(items)...) {}
+
+  StaticMap(const typename ItemT::val_t&... vals)
+      : items_(vals...) {}
+
   constexpr const keys_t& keys() const {
     return keys_;
   }
@@ -98,10 +107,12 @@ struct StaticMap {
   }
 };
 
+template <ItemKind... _ItemT>
+StaticMap(_ItemT&&... items) -> StaticMap<_ItemT...>;
+
 }  // namespace smap
 
 #ifndef NDEBUG
-  #include "./item.hpp"
   #include "./iterator_kind.hpp"
   #include "./staticmap_kind.hpp"
 
