@@ -1,27 +1,14 @@
 #ifndef STATICMAP_ITEM_HPP
 #define STATICMAP_ITEM_HPP
 
-#include <concepts>
+#include "./item_kind.hpp"
 
 namespace smap {
 
-template <class T>
-concept Comparable = requires(T x, T y) {
-  { x == y } -> std::convertible_to<bool>;
-};
-
-template <class T>
-concept ItemKind = requires {
-  typename T::key_t;
-  typename T::val_t;
-  Comparable<typename T::key_t>;
-  { T::key } -> std::convertible_to<typename T::key_t>;
-} and requires(T x) {
-  { x.val } -> std::same_as<typename T::val_t&>;
-};
-
 template <Comparable auto _key, class ValT>
 struct Item {
+  struct smap_item_explicit_feature {};
+
   using key_t = decltype(_key);
   using val_t = ValT;
 
@@ -30,5 +17,9 @@ struct Item {
 };
 
 }  // namespace smap
+
+#ifndef NDEBUG
+static_assert(smap::ItemKind<smap::Item<100, int>>);
+#endif
 
 #endif  // STATICMAP_ITEM_HPP
