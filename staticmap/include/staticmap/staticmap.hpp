@@ -28,12 +28,40 @@ struct StaticMap {
   items_t items_;
 
  public:
-  template <ItemKind... _ItemT>
-  StaticMap(_ItemT&&... items)
-      : items_(std::forward<_ItemT>(items)...) {}
+  StaticMap()
+      : items_() {}
 
-  StaticMap(const typename ItemT::val_t&... vals)
-      : items_(vals...) {}
+  template <class... ValT>
+    requires(sizeof...(ValT) == sizeof...(ItemT))
+  StaticMap(ValT&&... vals)
+      : items_(std::forward<ValT>(vals)...) {}
+
+ private:
+  template <std::size_t... indices, class... ValT>
+  constexpr auto init_partial(std::index_sequence<indices...>, ValT&&... vals) {
+    auto val_tuple = std::make_tuple(std::forward<ValT>(vals)...);
+
+    return [&]<std::size_t... all_indices>(std::index_sequence<all_indices...>) {
+      return std::tuple<ItemT...>{[&]() -> decltype(auto) {
+        if constexpr (all_indices < sizeof...(ValT)) {
+          return ItemT(std::get<all_indices>(val_tuple));
+        } else {
+          using ItemType = std::tuple_element_t<all_indices, std::tuple<ItemT...>>;
+          using ValueType = typename ItemType::val_t;
+          static_assert(std::is_default_constructible_v<ValueType>,
+              "Value type must be default constructible for partial init");
+          return ItemType(ValueType{});
+        }
+      }()...};
+    }(std::make_index_sequence<sizeof...(ItemT)>{});
+  }
+
+ public:
+  template <class... ValT>
+    requires(sizeof...(ValT) > 0 and sizeof...(ValT) < sizeof...(ItemT))
+  StaticMap(ValT&&... vals)
+      : items_(init_partial(
+            std::index_sequence_for<ValT...>{}, std::forward<ValT>(vals)...)) {}
 
   constexpr const keys_t& keys() const {
     return keys_;
@@ -107,8 +135,15 @@ struct StaticMap {
   }
 };
 
-template <ItemKind... _ItemT>
-StaticMap(_ItemT&&... items) -> StaticMap<_ItemT...>;
+template <ItemKind... ItemT>
+auto make_static_map(const ItemT&... items) {
+  return StaticMap<ItemT...>(items...);
+}
+
+template <ItemKind... ItemT>
+auto make_static_map_no_decay(ItemT&&... items) {
+  return StaticMap<ItemT...>(items...);
+}
 
 }  // namespace smap
 

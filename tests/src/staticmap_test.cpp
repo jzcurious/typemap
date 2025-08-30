@@ -8,6 +8,54 @@ TEST(StaticMapTest, Size) {
   EXPECT_EQ(TestMap::size, 3);
 }
 
+TEST(StaticMapConstructorTest, ConstructWithValues) {
+  TestMap map(100, 'A', 3.14);
+
+  EXPECT_EQ(map.at<10>(), 100);
+  EXPECT_EQ(map.at<20>(), 'A');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 3.14);
+}
+
+TEST(StaticMapConstructorTest, ConstructWithLValueReferences) {
+  int val1 = 100;
+  char val2 = 'A';
+  double val3 = 3.14;
+
+  TestMap map(val1, val2, val3);
+
+  EXPECT_EQ(map.at<10>(), 100);
+  EXPECT_EQ(map.at<20>(), 'A');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 3.14);
+}
+
+TEST(StaticMapConstructorTest, ConstructWithConstValues) {
+  const int val1 = 100;
+  const char val2 = 'A';
+  const double val3 = 3.14;
+
+  TestMap map(val1, val2, val3);
+
+  EXPECT_EQ(map.at<10>(), 100);
+  EXPECT_EQ(map.at<20>(), 'A');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 3.14);
+}
+
+TEST(StaticMapConstructorTest, PartialInitialization) {
+  TestMap map(100, 'A');
+
+  EXPECT_EQ(map.at<10>(), 100);
+  EXPECT_EQ(map.at<20>(), 'A');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 0.0);
+}
+
+TEST(StaticMapConstructorTest, PartialInitializationSingleValue) {
+  TestMap map(42);
+
+  EXPECT_EQ(map.at<10>(), 42);
+  EXPECT_EQ(map.at<20>(), '\0');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 0.0);
+}
+
 TEST(StaticMapTest, Keys) {
   TestMap map{};
   auto keys = map.keys();
@@ -63,22 +111,3 @@ TEST(StaticMapTest, GetWithDefault) {
   EXPECT_EQ(map.get<999>('Z'), 'Z');
   EXPECT_DOUBLE_EQ(map.get<999>(0.0), 0.0);
 }
-
-// TEST(StaticMapTest, Iterator) {
-//   TestMap map{100, 'A', 3.14};
-
-//   auto it = map.begin();
-//   ASSERT_NE(it, map.end());
-//   EXPECT_EQ(it->val, 100);
-//   ++it;
-
-//   ASSERT_NE(it, map.end());
-//   EXPECT_EQ(it->val, 'A');
-//   ++it;
-
-//   ASSERT_NE(it, map.end());
-//   EXPECT_DOUBLE_EQ(it->val, 3.14);
-//   ++it;
-
-//   EXPECT_EQ(it, map.end());
-// }

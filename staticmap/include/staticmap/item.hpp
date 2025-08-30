@@ -3,6 +3,8 @@
 
 #include "./item_kind.hpp"
 
+#include <utility>
+
 namespace smap {
 
 template <Comparable auto _key, class ValT>
@@ -14,6 +16,13 @@ struct Item {
 
   static constexpr const key_t key = _key;
   val_t val;
+
+  Item() = default;
+
+  template <class _ValT>
+    requires std::convertible_to<_ValT, ValT>
+  Item(_ValT&& val)
+      : val(std::forward<_ValT>(val)) {}
 };
 
 }  // namespace smap

@@ -18,7 +18,7 @@ concept StaticMapIteratorKind = requires {
   { x != x } -> std::same_as<bool>;
   { x.index() } -> std::convertible_to<std::size_t>;
   {
-    x.visit([]() {})
+    x.visit([](auto) {})
   };
 } and std::constructible_from<T, typename T::smap_t&>;
 
