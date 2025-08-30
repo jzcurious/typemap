@@ -87,39 +87,52 @@ struct StaticMap {
   struct find_result_t {
     bool found;
     std::size_t index;
+
+    constexpr operator bool() const {
+      return found;
+    }
+
+    constexpr operator std::size_t() const {
+      return index;
+    }
   };
 
   template <auto key, std::size_t... i>
-  static constexpr find_result_t find_item(std::index_sequence<i...>) {
+  static constexpr find_result_t _find_item(std::index_sequence<i...>) {
     std::size_t item_idx = 0;
     bool found = false;
     ((std::get<i>(keys_) == key ? (item_idx = i, found = true) : false) or ...);
     return {found, item_idx};
   }
 
+  template <auto key>
+  static constexpr find_result_t find_item() {
+    return _find_item<key>(std::make_index_sequence<size>{});
+  }
+
  public:
   template <auto key>
   static constexpr bool contains() {
-    return find_item<key>(std::make_index_sequence<size>{}).found;
+    return find_item<key>();
   }
 
   template <auto key, bool ignore_not_found = false>
   auto& at() {
-    constexpr auto result = find_item<key>(std::make_index_sequence<size>{});
+    constexpr auto result = find_item<key>();
     static_assert(ignore_not_found or result.found, "[smap] Key not found.");
     return std::get<result.index>(items_).val;
   }
 
   template <auto key, bool ignore_not_found = false>
   const auto& at() const {
-    constexpr auto result = find_item<key>(std::make_index_sequence<size>{});
+    constexpr auto result = find_item<key>();
     static_assert(ignore_not_found or result.found, "[smap] Key not found.");
     return std::get<result.index>(items_).val;
   }
 
   template <auto key, class DefaultValT>
   auto get(DefaultValT default_value = {}) const {
-    constexpr auto result = find_item<key>(std::make_index_sequence<size>{});
+    constexpr auto result = find_item<key>();
     if constexpr (result.found)
       return std::get<result.index>(items_).val;
     else
@@ -132,6 +145,38 @@ struct StaticMap {
 
   auto end() {
     return StaticMapIterator(*this, size);
+  }
+
+ private:
+
+ public:
+  template <class... _ItemT>
+    requires(ItemKind<std::decay_t<_ItemT>> and ...)
+  void update(_ItemT&&... items) {
+    (
+        [&]() {
+          constexpr auto result = find_item<items.key>();
+          if constexpr (result) {
+            std::get<result.index>(items_) = std::forward<_ItemT>(items);
+          }
+        }(),
+        ...);
+  }
+
+  template <StaticMapKind StaticMapT>
+  void update(const StaticMapT& other) {
+    std::apply(
+        [&](const auto&... items) {
+          (
+              [&]() {
+                constexpr auto result = find_item<items.key>();
+                if constexpr (result) {
+                  std::get<result.index>(items_) = items;
+                }
+              }(),
+              ...);
+        },
+        other.items());
   }
 };
 

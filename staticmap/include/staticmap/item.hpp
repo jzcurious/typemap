@@ -23,6 +23,26 @@ struct Item {
     requires std::convertible_to<_ValT, ValT>
   Item(_ValT&& val)
       : val(std::forward<_ValT>(val)) {}
+
+  template <ItemKind ItemT>
+  static constexpr bool is_compatible() {
+    return std::is_same_v<typename ItemT::key_t, key_t> and ItemT::key == key
+           and std::is_convertible_v<typename ItemT::val_t, val_t>;
+  }
+
+  template <ItemKind ItemT>
+    requires(is_compatible<ItemT>())
+  Item& operator=(const ItemT& other) {
+    val = other.val;
+    return *this;
+  }
+
+  template <ItemKind ItemT>
+    requires(is_compatible<ItemT>())
+  Item& operator=(ItemT&& other) {
+    val = std::move(other.val);
+    return *this;
+  }
 };
 
 }  // namespace smap
