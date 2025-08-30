@@ -31,10 +31,10 @@ struct StaticMap {
   StaticMap()
       : items_() {}
 
-  template <class... ValT>
-    requires(sizeof...(ValT) == sizeof...(ItemT))
-  StaticMap(ValT&&... vals)
-      : items_(std::forward<ValT>(vals)...) {}
+  template <class... T>
+    requires(sizeof...(T) == sizeof...(ItemT))
+  StaticMap(T&&... args)
+      : items_(std::forward<T>(args)...) {}
 
  private:
   template <std::size_t... indices, class... ValT>
@@ -180,14 +180,10 @@ struct StaticMap {
   }
 };
 
-template <ItemKind... ItemT>
-auto make_static_map(const ItemT&... items) {
-  return StaticMap<ItemT...>(items...);
-}
-
-template <ItemKind... ItemT>
-auto make_static_map_no_decay(ItemT&&... items) {
-  return StaticMap<ItemT...>(items...);
+template <class... ItemT>
+  requires(ItemKind<std::decay_t<ItemT>> and ...)
+auto make_static_map(ItemT&&... items) {
+  return StaticMap<std::decay_t<ItemT>...>(std::forward<ItemT>(items)...);
 }
 
 }  // namespace smap
