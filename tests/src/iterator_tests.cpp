@@ -19,7 +19,8 @@ TEST(StaticMapIteratorTest, DereferenceOperator) {
   auto it = smap::StaticMapIterator<TestMap>(map);
 
   int visited_value = 0;
-  it.visit([&visited_value](const auto& item) { visited_value = item.val; });
+  it.visit(
+      [&visited_value](const auto& item) { visited_value = item.val; });  // linter bug
   EXPECT_EQ(visited_value, 100);
 }
 
@@ -173,18 +174,40 @@ TEST(StaticMapIteratorTest, IteratorArithmetic) {
   EXPECT_TRUE(it == it2);
 }
 
-// TEST(StaticMapIteratorTest, CopyAndAssignment) {
-//   TestMap map(100, 'A', 3.14);
+TEST(StaticMapIteratorTest, IncrementBoundsChecking) {
+  TestMap map(100, 'A', 3.14);
 
-//   auto it1 = smap::StaticMapIterator<TestMap>(map, 1);
-//   auto it2 = it1;
+  auto it = map.begin();
+  EXPECT_EQ(it.index(), 0);
 
-//   EXPECT_TRUE(it1 == it2);
-//   EXPECT_EQ(it2.index(), 1);
+  ++it;
+  EXPECT_EQ(it.index(), 1);
 
-//   auto it3 = smap::StaticMapIterator<TestMap>(map, 2);
-//   it3 = it1;
+  ++it;
+  EXPECT_EQ(it.index(), 2);
 
-//   EXPECT_TRUE(it1 == it3);
-//   EXPECT_EQ(it3.index(), 1);
-// }
+  ++it;
+  EXPECT_EQ(it.index(), 3);  // end position
+
+  ++it;
+  EXPECT_EQ(it.index(), 3);
+}
+
+TEST(StaticMapIteratorTest, DecrementBoundsChecking) {
+  TestMap map(100, 'A', 3.14);
+
+  auto it = map.end();
+  EXPECT_EQ(it.index(), 3);
+
+  --it;
+  EXPECT_EQ(it.index(), 2);
+
+  --it;
+  EXPECT_EQ(it.index(), 1);
+
+  --it;
+  EXPECT_EQ(it.index(), 0);
+
+  --it;
+  EXPECT_EQ(it.index(), 0);
+}

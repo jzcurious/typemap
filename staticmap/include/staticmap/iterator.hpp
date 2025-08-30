@@ -25,7 +25,7 @@ struct StaticMapIterator {
       , smap_(static_map) {}
 
   StaticMapIterator& operator++() {
-    ++index_;
+    if (index_ < smap_t::size) ++index_;
     return *this;
   }
 
@@ -36,7 +36,7 @@ struct StaticMapIterator {
   }
 
   StaticMapIterator& operator--() {
-    --index_;
+    if (index_ > 0) --index_;
     return *this;
   }
 
