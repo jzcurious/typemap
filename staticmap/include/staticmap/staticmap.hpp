@@ -10,10 +10,18 @@
 
 namespace smap {
 
-template <ItemKind... ItemT>
-struct StaticMap {
-  // TODO: check unique
+template <auto... keys_candidates>
+constexpr bool all_unique_keys() {
+  constexpr const std::size_t unique = ([]<auto key>() {
+    return (static_cast<std::size_t>(keys_candidates == key) + ...);
+  }.template operator()<keys_candidates>()
+                                        + ...);
+  return unique == sizeof...(keys_candidates);
+}
 
+template <ItemKind... ItemT>
+  requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
+struct StaticMap {
  public:
   struct smap_static_map_explicit_feature {};
 
@@ -25,11 +33,11 @@ struct StaticMap {
 
  private:
   static constexpr const keys_t keys_ = {ItemT::key...};
+
   items_t items_;
 
  public:
-  StaticMap()
-      : items_() {}
+  StaticMap() = default;
 
   template <class... T>
     requires(sizeof...(T) == sizeof...(ItemT))
@@ -119,14 +127,14 @@ struct StaticMap {
   template <auto key, bool ignore_not_found = false>
   auto& at() {
     constexpr auto result = find_item<key>();
-    static_assert(ignore_not_found or result.found, "[smap] Key not found.");
+    static_assert(ignore_not_found or result.found, "[smap] Key not found");
     return std::get<result.index>(items_).val;
   }
 
   template <auto key, bool ignore_not_found = false>
   const auto& at() const {
     constexpr auto result = find_item<key>();
-    static_assert(ignore_not_found or result.found, "[smap] Key not found.");
+    static_assert(ignore_not_found or result.found, "[smap] Key not found");
     return std::get<result.index>(items_).val;
   }
 
@@ -192,11 +200,16 @@ auto make_static_map(ItemT&&... items) {
   #include "./iterator_kind.hpp"
   #include "./staticmap_kind.hpp"
 
-static_assert(
-    smap::StaticMapKind<smap::StaticMap<smap::Item<10, int>, smap::Item<11, char>>>);
+using map_t = smap::StaticMap<smap::Item<10, int>, smap::Item<11, char>>;
 
-static_assert(smap::StaticMapIteratorKind<
-    smap::StaticMapIterator<smap::StaticMap<smap::Item<10, int>, smap::Item<11, char>>>>);
+static_assert(smap::StaticMapKind<map_t>);
+static_assert(smap::StaticMapIteratorKind<smap::StaticMapIterator<map_t>>);
+
+using bad_keys_map1_t
+    = smap::StaticMap<smap::Item<1, int>, smap::Item<0, char>, smap::Item<1, int>>;
+
+using bad_keys_map2_t
+    = smap::StaticMap<smap::Item<10, int>, smap::Item<20, char>, smap::Item<10, double>>;
 #endif
 
 #endif  // STATICMAP_STATICMAP_HPP
