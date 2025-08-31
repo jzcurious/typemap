@@ -43,6 +43,15 @@ struct Item {
     val = std::move(other.val);
     return *this;
   }
+
+  template <ItemKind ItemT>
+  bool operator=(const ItemT& other) {
+    if constexpr (not is_compatible<ItemT>()) {
+      return false;
+    } else {
+      return val == other.val;
+    }
+  }
 };
 
 }  // namespace smap

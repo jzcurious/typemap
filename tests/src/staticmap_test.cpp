@@ -4,6 +4,8 @@
 using TestMap
     = smap::StaticMap<smap::Item<10, int>, smap::Item<20, char>, smap::Item<30, double>>;
 
+using EmptyMap = smap::StaticMap<>;
+
 TEST(StaticMapTest, Size) {
   EXPECT_EQ(TestMap::size, 3);
 }
@@ -371,4 +373,162 @@ TEST(StaticMapUpdateItemsTest, UpdateWithSameValues) {
   EXPECT_EQ(map.at<10>(), 100);
   EXPECT_EQ(map.at<20>(), 'A');
   EXPECT_DOUBLE_EQ(map.at<30>(), 3.14);
+}
+
+TEST(StaticMapNewMethodsTest, EmptyMethod) {
+  TestMap non_empty_map(100, 'A', 3.14);
+  EmptyMap empty_map;
+
+  EXPECT_FALSE(non_empty_map.empty());
+  EXPECT_TRUE(empty_map.empty());
+  EXPECT_EQ(empty_map.size, 0);
+}
+
+TEST(StaticMapNewMethodsTest, ContainsAllMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  EXPECT_TRUE((map.contains_all<10, 20, 30>()));
+
+  EXPECT_TRUE((map.contains_all<10, 20>()));
+  EXPECT_TRUE((map.contains_all<30>()));
+
+  EXPECT_FALSE((map.contains_all<10, 999>()));
+  EXPECT_FALSE((map.contains_all<999>()));
+
+  EXPECT_TRUE((map.contains_all<>()));
+}
+
+TEST(StaticMapNewMethodsTest, ContainsAnyMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  EXPECT_TRUE((map.contains_any<10, 20, 30>()));
+
+  EXPECT_TRUE((map.contains_any<10, 999>()));
+  EXPECT_TRUE((map.contains_any<999, 10>()));
+
+  EXPECT_TRUE((map.contains_any<10>()));
+  EXPECT_TRUE((map.contains_any<20>()));
+  EXPECT_TRUE((map.contains_any<30>()));
+
+  EXPECT_FALSE((map.contains_any<999, 888>()));
+  EXPECT_FALSE((map.contains_any<999>()));
+
+  EXPECT_FALSE((map.contains_any<>()));
+}
+
+TEST(StaticMapNewMethodsTest, SetMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  map.set<10>(200);
+  map.set<20>('B');
+  map.set<30>(6.28);
+
+  EXPECT_EQ(map.at<10>(), 200);
+  EXPECT_EQ(map.at<20>(), 'B');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 6.28);
+
+  map.set<10>(300);
+  EXPECT_EQ(map.at<10>(), 300);
+}
+
+TEST(StaticMapNewMethodsTest, ClearMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  EXPECT_EQ(map.at<10>(), 100);
+  EXPECT_EQ(map.at<20>(), 'A');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 3.14);
+
+  map.clear();
+
+  EXPECT_EQ(map.at<10>(), 0);
+  EXPECT_EQ(map.at<20>(), '\0');
+  EXPECT_DOUBLE_EQ(map.at<30>(), 0.0);
+}
+
+TEST(StaticMapNewMethodsTest, ForEachMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  int count = 0;
+  map.for_each([&count](const auto& item) { ++count; });
+  EXPECT_EQ(count, 3);
+
+  int int_sum = 0;
+  map.for_each([&int_sum](const auto& item) {
+    if constexpr (std::is_same_v<typename std::remove_cvref_t<decltype(item)>::val_t,
+                      int>) {
+      int_sum += item.val;
+    }
+  });
+  EXPECT_EQ(int_sum, 100);
+}
+
+TEST(StaticMapNewMethodsTest, ForEachIndexedMethod) {
+  TestMap map(100, 'A', 3.14);
+
+  std::vector<int> indices;
+  std::vector<int> values;
+
+  map.for_each_indexed([&](std::size_t index, const auto& item) {
+    indices.push_back(index);
+    if constexpr (std::is_same_v<typename std::remove_cvref_t<decltype(item)>::val_t,
+                      int>) {
+      values.push_back(item.val);
+    }
+  });
+
+  EXPECT_EQ(indices.size(), 3);
+  EXPECT_EQ(indices[0], 0);
+  EXPECT_EQ(indices[1], 1);
+  EXPECT_EQ(indices[2], 2);
+  EXPECT_EQ(values.size(), 1);
+  EXPECT_EQ(values[0], 100);
+}
+
+TEST(StaticMapNewMethodsTest, ValueTypeAlias) {
+  TestMap map(100, 'A', 3.14);
+
+  using int_type = TestMap::val_t<10>;
+  using char_type = TestMap::val_t<20>;
+  using double_type = TestMap::val_t<30>;
+
+  static_assert(std::is_same_v<int_type, int>);
+  static_assert(std::is_same_v<char_type, char>);
+  static_assert(std::is_same_v<double_type, double>);
+}
+
+TEST(StaticMapNewMethodsTest, EqualityOperator) {
+  TestMap map1(100, 'A', 3.14);
+  TestMap map2(100, 'A', 3.14);
+  TestMap map3(200, 'B', 6.28);
+
+  EXPECT_TRUE(map1 == map2);
+
+  EXPECT_FALSE(map1 == map3);
+
+  using SmallMap = smap::StaticMap<smap::Item<10, int>>;
+  SmallMap small_map(100);
+
+  EXPECT_FALSE(map1 == small_map);
+}
+
+TEST(StaticMapNewMethodsTest, EqualityOperatorDifferentTypes) {
+  TestMap map1(100, 'A', 3.14);
+
+  using DifferentMap = smap::
+      StaticMap<smap::Item<10, long>, smap::Item<20, char>, smap::Item<30, double>>;
+
+  DifferentMap map2(100L, 'A', 3.14);
+}
+
+TEST(StaticMapNewMethodsTest, ChainingOperations) {
+  TestMap map(100, 'A', 3.14);
+
+  map.set<10>(200);
+  EXPECT_EQ(map.at<10>(), 200);
+
+  map.clear();
+  EXPECT_EQ(map.at<10>(), 0);
+
+  EXPECT_TRUE((map.contains_all<10, 20, 30>()));
+  EXPECT_FALSE((map.contains_any<999>()));
 }

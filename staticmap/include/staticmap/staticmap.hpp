@@ -71,6 +71,10 @@ struct StaticMap {
       : items_(init_partial(
             std::index_sequence_for<ValT...>{}, std::forward<ValT>(vals)...)) {}
 
+  constexpr bool empty() const {
+    return size == 0;
+  }
+
   constexpr const keys_t& keys() const {
     return keys_;
   }
@@ -124,6 +128,16 @@ struct StaticMap {
     return find_item<key>();
   }
 
+  template <auto... keys>
+  static constexpr bool contains_all() {
+    return (contains<keys>() and ...);
+  }
+
+  template <auto... keys>
+  static constexpr bool contains_any() {
+    return (contains<keys>() or ...);
+  }
+
   template <auto key, bool ignore_not_found = false>
   auto& at() {
     constexpr auto result = find_item<key>();
@@ -147,6 +161,28 @@ struct StaticMap {
       return default_value;
   }
 
+  template <auto key, class ValT>
+  constexpr void set(ValT&& value) {
+    at<key>() = std::forward<ValT>(value);
+  }
+
+  constexpr void clear() {
+    std::apply(
+        [](auto&... items) { ((items.val = typename ItemT::val_t{}), ...); }, items_);
+  }
+
+  template <class FuncT>
+  constexpr void for_each(FuncT&& func) {  // TODO: check FuncT is callable
+    std::apply([&](auto&... items) { (func(items), ...); }, items_);
+  }
+
+  template <class FuncT>
+  constexpr void for_each_indexed(FuncT&& func) {
+    [&]<std::size_t... i>(std::index_sequence<i...>) {
+      (func(i, std::get<i>(items_)), ...);
+    }(std::make_index_sequence<size>{});
+  }
+
   auto begin() {
     return StaticMapIterator(*this);
   }
@@ -154,8 +190,6 @@ struct StaticMap {
   auto end() {
     return StaticMapIterator(*this, size);
   }
-
- private:
 
  public:
   template <class... _ItemT>
@@ -186,6 +220,61 @@ struct StaticMap {
         },
         other.items());
   }
+
+  template <auto key>
+  using val_t = typename std::remove_cvref_t<decltype(std::get<find_item<key>().index>(
+      items_))>::val_t;
+
+  // template <StaticMapKind StaticMapT>
+  // bool operator==(const StaticMapT& other) const {
+  //   if constexpr (StaticMapT::size != size) {
+  //     return false;
+  //   } else {
+  //     return std::apply(
+  //         [&](const auto&... items) {
+  //           (
+  //               [&]() {
+  //                 constexpr auto result = find_item<items.key>();
+  //                 if constexpr (result) {
+  //                   if (std::get<result.index>(items_) != items) {
+  //                     return false;
+  //                   }
+  //                 }
+  //               }(),
+  //               ...);
+  //           return true;
+  //         },
+  //         other.items());
+  //   }
+  // }
+
+  template <StaticMapKind StaticMapT>
+  bool operator==(const StaticMapT& other) const {
+    if constexpr (StaticMapT::size != size) {
+      return false;
+    } else {
+      bool result = true;
+      std::apply(
+          [&](const auto&... items) {
+            (([&]() {
+              constexpr auto key = items.key;
+              constexpr auto find_result = find_item<key>();
+              if constexpr (find_result.found) {
+                if (std::get<find_result.index>(items_).val != items.val) {
+                  result = false;
+                }
+              }
+            }()),
+                ...);
+          },
+          other.items());
+      return result;
+    }
+  }
+
+  // TODO: add merge
+  // TODO: add filter
+  // TODO: add join
 };
 
 template <class... ItemT>
