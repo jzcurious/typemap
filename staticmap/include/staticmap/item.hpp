@@ -45,7 +45,7 @@ struct Item {
   }
 
   template <ItemKind ItemT>
-  bool operator=(const ItemT& other) {
+  bool operator==(const ItemT& other) {
     if constexpr (not is_compatible<ItemT>()) {
       return false;
     } else {

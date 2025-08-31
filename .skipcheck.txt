@@ -1,0 +1,4 @@
+-*/googletest/*
+-*/gmock/*
+-*/external/gtest/*
+-*/build/_deps/googletest-src/*

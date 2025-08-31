@@ -189,3 +189,6 @@ data/
 
 # Notes
 *.draft.cu
+
+# Reports
+reports_html/

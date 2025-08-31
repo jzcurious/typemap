@@ -225,29 +225,6 @@ struct StaticMap {
   using val_t = typename std::remove_cvref_t<decltype(std::get<find_item<key>().index>(
       items_))>::val_t;
 
-  // template <StaticMapKind StaticMapT>
-  // bool operator==(const StaticMapT& other) const {
-  //   if constexpr (StaticMapT::size != size) {
-  //     return false;
-  //   } else {
-  //     return std::apply(
-  //         [&](const auto&... items) {
-  //           (
-  //               [&]() {
-  //                 constexpr auto result = find_item<items.key>();
-  //                 if constexpr (result) {
-  //                   if (std::get<result.index>(items_) != items) {
-  //                     return false;
-  //                   }
-  //                 }
-  //               }(),
-  //               ...);
-  //           return true;
-  //         },
-  //         other.items());
-  //   }
-  // }
-
   template <StaticMapKind StaticMapT>
   bool operator==(const StaticMapT& other) const {
     if constexpr (StaticMapT::size != size) {
@@ -294,11 +271,13 @@ using map_t = smap::StaticMap<smap::Item<10, int>, smap::Item<11, char>>;
 static_assert(smap::StaticMapKind<map_t>);
 static_assert(smap::StaticMapIteratorKind<smap::StaticMapIterator<map_t>>);
 
-using bad_keys_map1_t
-    = smap::StaticMap<smap::Item<1, int>, smap::Item<0, char>, smap::Item<1, int>>;
+using bad_keys_map1_t = smap::StaticMap<smap::Item<1, int>,
+    smap::Item<0, char>,
+    smap::Item<1, int>>;  // codechecker_suppress [all]
 
-using bad_keys_map2_t
-    = smap::StaticMap<smap::Item<10, int>, smap::Item<20, char>, smap::Item<10, double>>;
+using bad_keys_map2_t = smap::StaticMap<smap::Item<10, int>,
+    smap::Item<20, char>,
+    smap::Item<10, double>>;  // codechecker_suppress [all]
 #endif
 
 #endif  // STATICMAP_STATICMAP_HPP
