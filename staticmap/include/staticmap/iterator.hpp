@@ -17,7 +17,7 @@ struct StaticMapIterator {
 
  private:
   std::size_t index_;
-  StaticMapT& smap_;
+  std::reference_wrapper<StaticMapT> smap_;
 
  public:
   StaticMapIterator(StaticMapT& static_map, std::size_t index = 0)
@@ -50,7 +50,7 @@ struct StaticMapIterator {
     return (index_ == other.index_) and (&smap_ == &other.smap_);
   }
 
-  std::size_t index() const {
+  [[nodiscard]] std::size_t index() const {
     return index_;
   }
 
@@ -65,7 +65,9 @@ struct StaticMapIterator {
   template <class FuncT, std::size_t... i>
     requires((i < smap_t::size) and ...)
   constexpr void _visit(FuncT&& func, std::index_sequence<i...>) const {
-    ((index_ == i ? ((void)func(std::get<i>(smap_.items())), true) : false) or ...);
+    ((index_ == i ? ((void)std::forward<FuncT>(func)(std::get<i>(smap_.items())), true)
+                  : false)
+        or ...);
   }
 };
 

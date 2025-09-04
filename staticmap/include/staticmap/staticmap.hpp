@@ -71,7 +71,7 @@ struct StaticMap {
       : items_(init_partial(
             std::index_sequence_for<ValT...>{}, std::forward<ValT>(vals)...)) {}
 
-  constexpr bool empty() const {
+  [[nodiscard]] constexpr bool empty() const {
     return size == 0;
   }
 
@@ -172,14 +172,14 @@ struct StaticMap {
   }
 
   template <class FuncT>
-  constexpr void for_each(FuncT&& func) {  // TODO: check FuncT is callable
-    std::apply([&](auto&... items) { (func(items), ...); }, items_);
+  constexpr void for_each(FuncT&& func) {
+    std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); }, items_);
   }
 
   template <class FuncT>
   constexpr void for_each_indexed(FuncT&& func) {
     [&]<std::size_t... i>(std::index_sequence<i...>) {
-      (func(i, std::get<i>(items_)), ...);
+      (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
     }(std::make_index_sequence<size>{});
   }
 
