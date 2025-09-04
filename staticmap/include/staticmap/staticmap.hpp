@@ -192,14 +192,14 @@ struct StaticMap {
   }
 
  public:
-  template <class... _ItemT>
-    requires(ItemKind<std::decay_t<_ItemT>> and ...)
-  void update(_ItemT&&... items) {
+  template <class... ItemTT>
+    requires(ItemKind<std::decay_t<ItemTT>> and ...)
+  void update(ItemTT&&... items) {
     (
         [&]() {
           constexpr auto result = find_item<items.key>();
           if constexpr (result) {
-            std::get<result.index>(items_) = std::forward<_ItemT>(items);
+            std::get<result.index>(items_) = std::forward<ItemTT>(items);
           }
         }(),
         ...);
@@ -271,13 +271,10 @@ using map_t = smap::StaticMap<smap::Item<10, int>, smap::Item<11, char>>;
 static_assert(smap::StaticMapKind<map_t>);
 static_assert(smap::StaticMapIteratorKind<smap::StaticMapIterator<map_t>>);
 
-using bad_keys_map1_t = smap::StaticMap<smap::Item<1, int>,
-    smap::Item<0, char>,
-    smap::Item<1, int>>;  // codechecker_suppress [all]
+using bad_keys_map1_t
+    = smap::StaticMap<smap::Item<1, int>, smap::Item<0, char>, smap::Item<1, int>>;
 
-using bad_keys_map2_t = smap::StaticMap<smap::Item<10, int>,
-    smap::Item<20, char>,
-    smap::Item<10, double>>;  // codechecker_suppress [all]
+using bad_keys_map2_t
+    = smap::StaticMap<smap::Item<10, int>, smap::Item<20, char>, smap::Item<10, double>>;
 #endif
-
 #endif  // STATICMAP_STATICMAP_HPP

@@ -19,10 +19,10 @@ struct Item {
 
   Item() = default;
 
-  template <class _ValT>
-    requires std::convertible_to<_ValT, ValT>
-  Item(_ValT&& val)
-      : val(std::forward<_ValT>(val)) {}
+  template <class ValTT>
+    requires std::convertible_to<ValTT, ValT>
+  Item(ValTT&& val)
+      : val(std::forward<ValTT>(val)) {}
 
   template <ItemKind ItemT>
   static constexpr bool is_compatible() {
@@ -31,16 +31,9 @@ struct Item {
   }
 
   template <ItemKind ItemT>
-    requires(is_compatible<ItemT>())
-  Item& operator=(const ItemT& other) {
-    val = other.val;
-    return *this;
-  }
-
-  template <ItemKind ItemT>
-    requires(is_compatible<ItemT>())
+    requires(is_compatible<std::decay_t<ItemT>>())
   Item& operator=(ItemT&& other) {
-    val = std::move(other.val);
+    val = std::forward<ItemT>(other).val;
     return *this;
   }
 
