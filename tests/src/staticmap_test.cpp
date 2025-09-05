@@ -465,8 +465,8 @@ TEST(StaticMapNewMethodsTest, ForEachMethod) {
 TEST(StaticMapNewMethodsTest, ForEachIndexedMethod) {
   TestMap map(100, 'A', 3.14);
 
-  std::vector<int> indices;
-  std::vector<int> values;
+  std::vector<std::size_t> indices;
+  std::vector<std::size_t> values;
 
   map.for_each_indexed([&](std::size_t index, const auto& item) {
     indices.push_back(index);

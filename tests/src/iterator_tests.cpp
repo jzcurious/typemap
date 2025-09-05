@@ -19,8 +19,7 @@ TEST(StaticMapIteratorTest, DereferenceOperator) {
   auto it = smap::StaticMapIterator<TestMap>(map);
 
   int visited_value = 0;
-  it.visit(
-      [&visited_value](const auto& item) { visited_value = item.val; });  // linter bug
+  it.visit([&visited_value](const auto& item) { visited_value = item.val; });
   EXPECT_EQ(visited_value, 100);
 }
 

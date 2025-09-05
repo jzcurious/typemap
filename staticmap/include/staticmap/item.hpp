@@ -7,14 +7,14 @@
 
 namespace smap {
 
-template <Comparable auto _key, class ValT>
+template <Comparable auto key_v, class ValT>
 struct Item {
   struct smap_item_explicit_feature {};
 
-  using key_t = decltype(_key);
+  using key_t = decltype(key_v);
   using val_t = ValT;
 
-  static constexpr const key_t key = _key;
+  static constexpr const key_t key = key_v;
   val_t val;
 
   Item() = default;

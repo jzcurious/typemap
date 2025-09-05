@@ -10,6 +10,8 @@
 
 namespace smap {
 
+// TODO: add hash function
+
 template <auto... keys_candidates>
 constexpr bool all_unique_keys() {
   constexpr const std::size_t unique = ([]<auto key>() {
@@ -18,6 +20,46 @@ constexpr bool all_unique_keys() {
                                         + ...);
   return unique == sizeof...(keys_candidates);
 }
+
+template <ItemKind... ItemT>
+  requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
+struct StaticMap;
+
+template <ItemKind ItemT, StaticMapKind StaticMapT>
+struct add_unique_item;
+
+template <ItemKind ItemT>
+struct add_unique_item<ItemT, StaticMap<>> {
+  using type = StaticMap<ItemT>;
+};
+
+template <ItemKind U, ItemKind... T>
+struct add_unique_item<U, StaticMap<T...>> {
+  using type = std::conditional_t<StaticMap<T...>::template contains<U::key>(),
+      StaticMap<T...>,
+      StaticMap<U, T...>>;
+};
+
+template <StaticMapKind StaticMapT, ItemKind... ItemT>
+struct merge;
+
+template <StaticMapKind StaticMapT>
+struct merge<StaticMapT> {
+  using type = StaticMapT;
+};
+
+template <StaticMapKind StaticMapT, ItemKind U>
+struct merge<StaticMapT, U> {
+  using type = add_unique_item<U, StaticMapT>::type;
+};
+
+template <StaticMapKind StaticMapT, ItemKind U, ItemKind... T>
+struct merge<StaticMapT, U, T...> {
+  using type = add_unique_item<U, typename merge<StaticMapT, T...>::type>::type;
+};
+
+template <StaticMapKind StaticMapT, ItemKind... ItemT>
+using merge_t = merge<StaticMapT, ItemT...>::type;
 
 template <ItemKind... ItemT>
   requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
@@ -110,7 +152,8 @@ struct StaticMap {
   };
 
   template <auto key, std::size_t... i>
-  static constexpr find_result_t _find_item(std::index_sequence<i...>) {
+  static constexpr find_result_t _find_item(
+      std::index_sequence<i...>) {  // TODO: rename the function
     std::size_t item_idx = 0;
     bool found = false;
     ((std::get<i>(keys_) == key ? (item_idx = i, found = true) : false) or ...);
@@ -162,22 +205,22 @@ struct StaticMap {
   }
 
   template <auto key, class ValT>
-  constexpr void set(ValT&& value) {
+  void set(ValT&& value) {
     at<key>() = std::forward<ValT>(value);
   }
 
-  constexpr void clear() {
+  void clear() {
     std::apply(
         [](auto&... items) { ((items.val = typename ItemT::val_t{}), ...); }, items_);
   }
 
   template <class FuncT>
-  constexpr void for_each(FuncT&& func) {
+  void for_each(FuncT&& func) {
     std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); }, items_);
   }
 
   template <class FuncT>
-  constexpr void for_each_indexed(FuncT&& func) {
+  void for_each_indexed(FuncT&& func) {
     [&]<std::size_t... i>(std::index_sequence<i...>) {
       (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
     }(std::make_index_sequence<size>{});
@@ -194,36 +237,49 @@ struct StaticMap {
  public:
   template <class... ItemTT>
     requires(ItemKind<std::decay_t<ItemTT>> and ...)
-  void update(ItemTT&&... items) {
+  StaticMap& update(ItemTT&&... items) {
     (
         [&]() {
           constexpr auto result = find_item<items.key>();
           if constexpr (result) {
-            std::get<result.index>(items_) = std::forward<ItemTT>(items);
+            std::get<result.index>(items_).val = std::forward<ItemTT>(items).val;
           }
         }(),
         ...);
+    return *this;
   }
 
-  template <StaticMapKind StaticMapT>
-  void update(const StaticMapT& other) {
+  template <class StaticMapT>
+    requires StaticMapKind<std::decay_t<StaticMapT>>
+  StaticMap& update(StaticMapT&& other) {
     std::apply(
-        [&](const auto&... items) {
+        [&](auto&&... items) {
           (
               [&]() {
                 constexpr auto result = find_item<items.key>();
                 if constexpr (result) {
-                  std::get<result.index>(items_) = items;
+                  std::get<result.index>(items_).val
+                      = std::forward<decltype(items)>(items).val;
                 }
               }(),
               ...);
         },
-        other.items());
+        std::forward<StaticMapT>(other).items());
+    return *this;
   }
 
-  template <auto key>
-  using val_t = typename std::remove_cvref_t<decltype(std::get<find_item<key>().index>(
-      items_))>::val_t;
+  template <class StaticMapT>
+    requires StaticMapKind<std::decay_t<StaticMapT>>
+  auto merge(StaticMapT&& other) {
+    merge_t<std::decay_t<StaticMapT>, ItemT...> result;
+    result.update(*this);
+    result.update(std::forward<StaticMapT>(other));
+    return result;
+  }
+
+  // template <class FuncT, class StaticMapT>
+  //   requires StaticMapKind<std::decay_t<StaticMapT>>
+  // auto filter(FuncT&& pred, StaticMapT&& other) {}
 
   template <StaticMapKind StaticMapT>
   bool operator==(const StaticMapT& other) const {
@@ -249,9 +305,9 @@ struct StaticMap {
     }
   }
 
-  // TODO: add merge
-  // TODO: add filter
-  // TODO: add join
+  template <auto key>
+  using val_t = typename std::remove_cvref_t<decltype(std::get<find_item<key>().index>(
+      items_))>::val_t;
 };
 
 template <class... ItemT>
