@@ -174,13 +174,25 @@ struct StaticMap {
         [](auto&... items) { ((items.val = typename ItemT::val_t{}), ...); }, items_);
   }
 
-  template <class FuncT>
+  template <class FuncT>  // TODO: add constraint
   void for_each(FuncT&& func) {
+    std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); }, items_);
+  }
+
+  template <class FuncT>  // TODO: add constraint
+  void for_each(FuncT&& func) const {
     std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); }, items_);
   }
 
   template <class FuncT>
   void for_each_indexed(FuncT&& func) {
+    [&]<std::size_t... i>(std::index_sequence<i...>) {
+      (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
+    }(std::make_index_sequence<size>{});
+  }
+
+  template <class FuncT>
+  void for_each_indexed(FuncT&& func) const {
     [&]<std::size_t... i>(std::index_sequence<i...>) {
       (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
     }(std::make_index_sequence<size>{});
