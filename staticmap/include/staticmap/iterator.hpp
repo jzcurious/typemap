@@ -47,7 +47,7 @@ struct StaticMapIterator {
   }
 
   bool operator==(const StaticMapIterator& other) const {
-    return (index_ == other.index_) and (&smap_ == &other.smap_);
+    return (index_ == other.index_) and (&smap_.get() == &other.smap_.get());
   }
 
   [[nodiscard]] std::size_t index() const {

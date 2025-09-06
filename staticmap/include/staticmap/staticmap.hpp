@@ -3,8 +3,8 @@
 
 #include "./item.hpp"  // IWYU pragma: export
 
-#include "./item_kind.hpp"
 #include "./iterator.hpp"
+#include "./utility.hpp"
 
 #include <tuple>
 
@@ -12,57 +12,11 @@ namespace smap {
 
 // TODO: add hash function
 
-template <auto... keys_candidates>
-constexpr bool all_unique_keys() {
-  constexpr const std::size_t unique = ([]<auto key>() {
-    return (static_cast<std::size_t>(keys_candidates == key) + ...);
-  }.template operator()<keys_candidates>()
-                                        + ...);
-  return unique == sizeof...(keys_candidates);
-}
+// template <ItemKind... ItemT>
+//   requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
+// struct StaticMap {
 
 template <ItemKind... ItemT>
-  requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
-struct StaticMap;
-
-template <ItemKind ItemT, StaticMapKind StaticMapT>
-struct add_unique_item;
-
-template <ItemKind ItemT>
-struct add_unique_item<ItemT, StaticMap<>> {
-  using type = StaticMap<ItemT>;
-};
-
-template <ItemKind U, ItemKind... T>
-struct add_unique_item<U, StaticMap<T...>> {
-  using type = std::conditional_t<StaticMap<T...>::template contains<U::key>(),
-      StaticMap<T...>,
-      StaticMap<U, T...>>;
-};
-
-template <StaticMapKind StaticMapT, ItemKind... ItemT>
-struct merge;
-
-template <StaticMapKind StaticMapT>
-struct merge<StaticMapT> {
-  using type = StaticMapT;
-};
-
-template <StaticMapKind StaticMapT, ItemKind U>
-struct merge<StaticMapT, U> {
-  using type = add_unique_item<U, StaticMapT>::type;
-};
-
-template <StaticMapKind StaticMapT, ItemKind U, ItemKind... T>
-struct merge<StaticMapT, U, T...> {
-  using type = add_unique_item<U, typename merge<StaticMapT, T...>::type>::type;
-};
-
-template <StaticMapKind StaticMapT, ItemKind... ItemT>
-using merge_t = merge<StaticMapT, ItemT...>::type;
-
-template <ItemKind... ItemT>
-  requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
 struct StaticMap {
  public:
   struct smap_static_map_explicit_feature {};
@@ -139,8 +93,8 @@ struct StaticMap {
 
  private:
   struct find_result_t {
-    bool found;
-    std::size_t index;
+    bool found = false;
+    std::size_t index = 0;
 
     constexpr operator bool() const {
       return found;
@@ -152,17 +106,20 @@ struct StaticMap {
   };
 
   template <auto key, std::size_t... i>
-  static constexpr find_result_t _find_item(
-      std::index_sequence<i...>) {  // TODO: rename the function
-    std::size_t item_idx = 0;
-    bool found = false;
-    ((std::get<i>(keys_) == key ? (item_idx = i, found = true) : false) or ...);
-    return {found, item_idx};
+  static constexpr find_result_t find_item_impl(std::index_sequence<i...>) {
+    if constexpr (sizeof...(i) == 0) {
+      return {false, 0};
+    } else {
+      find_result_t result;
+      ((std::get<i>(keys_) == key ? (result.index = i, result.found = true) : false)
+          or ...);
+      return result;
+    }
   }
 
   template <auto key>
   static constexpr find_result_t find_item() {
-    return _find_item<key>(std::make_index_sequence<size>{});
+    return find_item_impl<key>(std::make_index_sequence<size>{});
   }
 
  public:
@@ -195,7 +152,7 @@ struct StaticMap {
     return std::get<result.index>(items_).val;
   }
 
-  template <auto key, class DefaultValT>
+  template <auto key, class DefaultValT = int>
   auto get(DefaultValT default_value = {}) const {
     constexpr auto result = find_item<key>();
     if constexpr (result.found)
@@ -270,16 +227,19 @@ struct StaticMap {
 
   template <class StaticMapT>
     requires StaticMapKind<std::decay_t<StaticMapT>>
-  auto merge(StaticMapT&& other) {
-    merge_t<std::decay_t<StaticMapT>, ItemT...> result;
+  auto merge(StaticMapT&& other) const {
+    internal::merge_t<std::decay_t<StaticMapT>, ItemT...> result;
     result.update(*this);
     result.update(std::forward<StaticMapT>(other));
     return result;
   }
 
-  // template <class FuncT, class StaticMapT>
-  //   requires StaticMapKind<std::decay_t<StaticMapT>>
-  // auto filter(FuncT&& pred, StaticMapT&& other) {}
+  template <class PredT>
+  auto filter(PredT) const {
+    internal::filter_t<internal::predicate_t<PredT>, ItemT...> result;
+    result.update(*this);
+    return result;
+  }
 
   template <StaticMapKind StaticMapT>
   bool operator==(const StaticMapT& other) const {

@@ -16,9 +16,10 @@ concept StaticMapKind = requires {
   { x.keys() } -> std::convertible_to<typename T::keys_t>;
   { x.vals() } -> std::convertible_to<typename T::keys_t>;
   { x.items() } -> std::convertible_to<typename T::items_t>;
-  requires requires() { x.template contains<0>(); };
-  requires requires() { x.template at<0, 1>(); };
-  requires requires() { x.template get<0, int>(); };
+  // requires requires() { x.template contains<0>(); };
+  // requires requires() { x.template at<0, 1>(); };
+  // requires requires() { x.template get<0, int>(); };
+  // TODO: add new traits
 };
 
 }  // namespace smap
