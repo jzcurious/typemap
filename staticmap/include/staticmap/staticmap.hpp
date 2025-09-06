@@ -12,10 +12,6 @@ namespace smap {
 
 // TODO: add hash function
 
-// template <ItemKind... ItemT>
-//   requires((sizeof...(ItemT) == 0) or all_unique_keys<ItemT::key...>())
-// struct StaticMap {
-
 template <ItemKind... ItemT>
 struct StaticMap {
  public:
@@ -36,7 +32,7 @@ struct StaticMap {
   StaticMap() = default;
 
   template <class... T>
-    requires(sizeof...(T) == sizeof...(ItemT))
+    requires(all_unique_keys<ItemT::key...>() and sizeof...(T) == sizeof...(ItemT))
   StaticMap(T&&... args)
       : items_(std::forward<T>(args)...) {}
 
@@ -234,9 +230,9 @@ struct StaticMap {
     return result;
   }
 
-  template <class PredT>
-  auto filter(PredT) const {
-    internal::filter_t<internal::predicate_t<PredT>, ItemT...> result;
+  template <PredicateKind auto pred>
+  auto filter() const {
+    internal::filter_t<pred, ItemT...> result;
     result.update(*this);
     return result;
   }

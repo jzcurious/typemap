@@ -32,8 +32,9 @@ class StaticMapFilterTest : public ::testing::Test {
 };
 
 TEST_F(StaticMapFilterTest, FilterEvenKeys) {
-  auto result
-      = test_map.filter([]<smap::ItemKind ItemT>() { return ItemT::key % 2 == 0; });
+  auto result = test_map.filter<[]<smap::ItemKind ItemT>() {
+    return ItemT::key % 2 == 0;
+  }>();
 
   static_assert(result.size == 2);
 
@@ -47,7 +48,9 @@ TEST_F(StaticMapFilterTest, FilterEvenKeys) {
 }
 
 TEST_F(StaticMapFilterTest, FilterGreaterThan) {
-  auto result = test_map.filter([]<smap::ItemKind ItemT>() { return ItemT::key > 2; });
+  auto result = test_map.filter<[]<smap::ItemKind ItemT>() {
+    return (ItemT::key > 2);
+  }>();
 
   static_assert(result.size == 2);
 
@@ -61,7 +64,7 @@ TEST_F(StaticMapFilterTest, FilterGreaterThan) {
 }
 
 TEST_F(StaticMapFilterTest, FilterAlwaysTrue) {
-  auto result = test_map.filter(AlwaysTruePredicate{});
+  auto result = test_map.filter<AlwaysTruePredicate{}>();
 
   static_assert(result.size == 4);
 
@@ -77,7 +80,7 @@ TEST_F(StaticMapFilterTest, FilterAlwaysTrue) {
 }
 
 TEST_F(StaticMapFilterTest, FilterAlwaysFalse) {
-  auto result = test_map.filter(AlwaysFalsePredicate{});
+  auto result = test_map.filter<AlwaysFalsePredicate{}>();
 
   static_assert(result.size == 0);
 
@@ -89,15 +92,17 @@ TEST_F(StaticMapFilterTest, FilterAlwaysFalse) {
 
 TEST_F(StaticMapFilterTest, FilterEmptyMap) {
   EmptyMap empty_map;
-  auto result
-      = empty_map.filter([]<smap::ItemKind ItemT>() { return ItemT::key % 2 == 0; });
+  auto result = empty_map.filter<[]<smap::ItemKind ItemT>() {
+    return ItemT::key % 2 == 0;
+  }>();
 
   EXPECT_EQ(result.size, 0);
 }
 
 TEST_F(StaticMapFilterTest, FilterWithLambda) {
-  auto result = test_map.filter(
-      []<smap::ItemKind ItemT>() { return ItemT::key == 1 || ItemT::key == 3; });
+  auto result = test_map.filter<[]<smap::ItemKind ItemT>() {
+    return ItemT::key == 1 || ItemT::key == 3;
+  }>();
 
   EXPECT_TRUE(result.contains<1>());
   EXPECT_TRUE(result.contains<3>());
@@ -114,7 +119,9 @@ TEST_F(StaticMapFilterTest, OriginalMapUnchanged) {
   double original_3 = test_map.get<3>();
   float original_4 = test_map.get<4>();
 
-  test_map.filter([]<smap::ItemKind ItemT>() { return ItemT::key % 2 == 0; });
+  test_map.filter<[]<smap::ItemKind ItemT>() {
+    return ItemT::key % 2 == 0;
+  }>();
 
   EXPECT_EQ(test_map.get<1>(), original_1);
   EXPECT_EQ(test_map.get<2>(), original_2);
@@ -123,8 +130,9 @@ TEST_F(StaticMapFilterTest, OriginalMapUnchanged) {
 }
 
 TEST_F(StaticMapFilterTest, FilterByValueType) {
-  auto result = test_map.filter(
-      []<smap::ItemKind ItemT> { return std::is_integral_v<typename ItemT::val_t>; });
+  auto result = test_map.filter<[]<smap::ItemKind ItemT> {
+    return std::is_integral_v<typename ItemT::val_t>;
+  }>();
 
   EXPECT_TRUE(result.contains<1>());
   EXPECT_TRUE(result.contains<2>());
@@ -147,22 +155,11 @@ class StaticMapFilterParamTest : public ::testing::TestWithParam<std::pair<int, 
 struct ThresholdPredicate {
   int threshold;
 
+  constexpr ThresholdPredicate(int threshold)
+      : threshold(threshold) {}
+
   template <smap::ItemKind ItemT>
   constexpr bool operator()() const {
     return ItemT::key > threshold;
   }
 };
-
-TEST_P(StaticMapFilterParamTest, FilterWithThreshold) {
-  auto [threshold, expected_count] = GetParam();
-  auto result = test_map.filter(ThresholdPredicate{threshold});
-  EXPECT_EQ(result.size, expected_count);
-}
-
-INSTANTIATE_TEST_SUITE_P(FilterThresholdTests,
-    StaticMapFilterParamTest,
-    ::testing::Values(std::make_pair(0, 4),
-        std::make_pair(1, 3),
-        std::make_pair(2, 2),
-        std::make_pair(3, 1),
-        std::make_pair(4, 0)));
