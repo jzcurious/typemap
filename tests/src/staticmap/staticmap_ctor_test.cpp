@@ -111,3 +111,23 @@ TEST_F(StaticMapTest, DefaultInitialization) {
   EXPECT_EQ(map.template at<1>(), 0);
   EXPECT_EQ(map.template at<'a'>(), "");
 }
+
+TEST_F(StaticMapTest, RecursiveConstruction) {
+  // clang-format off
+  auto map = smap::StaticMap<
+    smap::Item<1,
+      smap::StaticMap<
+        smap::Item<2,
+          smap::StaticMap<
+            smap::Item<3, std::integral_constant<int, 888>>
+          >
+        >
+      >
+    >
+  >{};
+  // clang-format on
+
+  auto val = map.at<1>().at<2>().at<3>();
+
+  EXPECT_EQ(val, 888);
+}

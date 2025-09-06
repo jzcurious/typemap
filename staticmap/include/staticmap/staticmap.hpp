@@ -43,7 +43,6 @@ struct StaticMap {
   template <std::size_t... indices, class... ValT>
   constexpr auto init_partial(std::index_sequence<indices...>, ValT&&... vals) {
     auto val_tuple = std::make_tuple(std::forward<ValT>(vals)...);
-
     return [&]<std::size_t... all_indices>(std::index_sequence<all_indices...>) {
       return std::tuple<ItemT...>{[&]() -> decltype(auto) {
         if constexpr (all_indices < sizeof...(ValT)) {
@@ -67,7 +66,7 @@ struct StaticMap {
             std::index_sequence_for<ValT...>{}, std::forward<ValT>(vals)...)) {}
 
   template <class ValT>
-    requires(not std::is_same_v<std::decay_t<ValT>, StaticMap<ItemT...>>)
+    requires(not StaticMapKind<std::decay_t<ValT>>)
   StaticMap(ValT&& vals)
       : items_(init_partial(std::index_sequence_for<ValT>{}, std::forward<ValT>(vals))) {}
 
