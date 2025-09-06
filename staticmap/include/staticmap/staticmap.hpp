@@ -32,7 +32,10 @@ struct StaticMap {
   StaticMap() = default;
 
   template <class... T>
-    requires(all_unique_keys<ItemT::key...>() and sizeof...(T) == sizeof...(ItemT))
+    requires(
+        ((std::is_same_v<ItemT, T> or std::is_convertible_v<T, typename ItemT::key_t>)
+            and ...)
+        and all_unique_keys<ItemT::key...>() and sizeof...(T) == sizeof...(ItemT))
   StaticMap(T&&... args)
       : items_(std::forward<T>(args)...) {}
 
@@ -58,10 +61,15 @@ struct StaticMap {
 
  public:
   template <class... ValT>
-    requires(sizeof...(ValT) > 0 and sizeof...(ValT) < sizeof...(ItemT))
+    requires(sizeof...(ValT) > 1 and sizeof...(ValT) < sizeof...(ItemT))
   StaticMap(ValT&&... vals)
       : items_(init_partial(
             std::index_sequence_for<ValT...>{}, std::forward<ValT>(vals)...)) {}
+
+  template <class ValT>
+    requires(not std::is_same_v<std::decay_t<ValT>, StaticMap<ItemT...>>)
+  StaticMap(ValT&& vals)
+      : items_(init_partial(std::index_sequence_for<ValT>{}, std::forward<ValT>(vals))) {}
 
   [[nodiscard]] constexpr bool empty() const {
     return size == 0;
