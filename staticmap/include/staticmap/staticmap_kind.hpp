@@ -14,7 +14,7 @@ concept StaticMapKind = requires {
   { T::size } -> std::convertible_to<std::size_t>;
 } and requires(T x) {
   { x.keys() } -> std::convertible_to<typename T::keys_t>;
-  { x.vals() } -> std::convertible_to<typename T::keys_t>;
+  { x.vals() } -> std::convertible_to<typename T::vals_t>;
   { x.items() } -> std::convertible_to<typename T::items_t>;
   // requires requires() { x.template contains<0>(); };
   // requires requires() { x.template at<0, 1>(); };

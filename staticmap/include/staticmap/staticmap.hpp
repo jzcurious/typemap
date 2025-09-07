@@ -94,7 +94,7 @@ struct StaticMap {
     return items_;
   }
 
- private:
+ public:
   struct find_result_t {
     bool found = false;
     std::size_t index = 0;
@@ -108,6 +108,7 @@ struct StaticMap {
     }
   };
 
+ private:
   template <auto key, std::size_t... i>
   static constexpr find_result_t find_item_impl(std::index_sequence<i...>) {
     if constexpr (sizeof...(i) == 0) {
@@ -120,12 +121,12 @@ struct StaticMap {
     }
   }
 
+ public:
   template <auto key>
   static constexpr find_result_t find_item() {
     return find_item_impl<key>(std::make_index_sequence<size>{});
   }
 
- public:
   template <auto key>
   static constexpr bool contains() {
     return find_item<key>();
@@ -165,13 +166,14 @@ struct StaticMap {
   }
 
   template <auto key, class ValT>
-  void set(ValT&& value) {
-    at<key>() = std::forward<ValT>(value);
+  auto& set(ValT&& value) {
+    return at<key>() = std::forward<ValT>(value);
   }
 
-  void clear() {
+  auto& clear() {
     std::apply(
         [](auto&... items) { ((items.val = typename ItemT::val_t{}), ...); }, items_);
+    return *this;
   }
 
   template <class FuncT>  // TODO: add constraint
@@ -268,9 +270,9 @@ struct StaticMap {
               constexpr auto key = items.key;
               constexpr auto find_result = find_item<key>();
               if constexpr (find_result.found) {
-                if (std::get<find_result.index>(items_).val != items.val) {
-                  result = false;
-                }
+                if (std::get<find_result.index>(items_).val != items.val) result = false;
+              } else {
+                result = false;
               }
             }()),
                 ...);
