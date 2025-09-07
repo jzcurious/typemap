@@ -27,18 +27,19 @@ struct Item {
   template <ItemKind ItemT>
   static constexpr bool is_compatible() {
     return std::is_same_v<typename ItemT::key_t, key_t> and ItemT::key == key
-           and std::is_convertible_v<typename ItemT::val_t, val_t>;
+           and (std::is_convertible_v<typename ItemT::val_t, val_t>
+                or std::is_convertible_v<val_t, typename ItemT::val_t>);
   }
 
-  template <ItemKind ItemT>
-    requires(is_compatible<std::decay_t<ItemT>>())
+  template <class ItemT>
+    requires(ItemKind<std::decay_t<ItemT>> and is_compatible<std::decay_t<ItemT>>())
   Item& operator=(ItemT&& other) {
     val = std::forward<ItemT>(other).val;
     return *this;
   }
 
   template <ItemKind ItemT>
-  bool operator==(const ItemT& other) {
+  bool operator==(const ItemT& other) const {
     if constexpr (not is_compatible<ItemT>()) {
       return false;
     } else {
