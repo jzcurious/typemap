@@ -24,10 +24,11 @@ struct Item {
 
   Item() = default;
 
-  template <class ValTT>
-    requires std::convertible_to<ValTT, ValT>
-  Item(ValTT&& val)
-      : val(std::forward<ValTT>(val)) {}
+  Item(const ValT& val)
+      : val(val) {}
+
+  Item(ValT&& val)
+      : val(std::move(val)) {}
 
   template <ItemKind ItemT>
   static constexpr bool is_compatible() {

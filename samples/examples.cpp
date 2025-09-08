@@ -140,12 +140,27 @@ using user_record_t = smap::Item<id, UserProfile>;
 void user_profiles_example() {
   std::cout << "\n=== User Profiles ===\n";
 
-  // auto item = smap::Item<0, UserProfile>("John", 40, {"read", "write", "admin"});
-
+  // clang-format off
   auto profiles = smap::make_static_map(
-      user_record_t<1>(UserProfile("Alice", 25, {"read", "write"})),
-      user_record_t<2>(UserProfile("Bob", 30, {"read"})),
-      user_record_t<3>(UserProfile("Charlie", 35, {"admin"})));
+      user_record_t<1>({
+        .name = "Alice",
+        .age = 25,
+        .permissions = {"read", "write"}
+      }),
+
+      user_record_t<2>({
+        .name = "Bob",
+        .age = 30,
+        .permissions = {"read"}
+      }),
+
+      user_record_t<3>({
+        .name = "Charlie",
+        .age = 35,
+        .permissions = {"admin"}
+      })
+  );
+  // clang-format on
 
   // Iteration with indices
   profiles.for_each_indexed([](std::size_t index, const auto& item) {
