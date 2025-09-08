@@ -51,9 +51,9 @@ TEST_F(StaticMapForEachTest, ForEachTypeSpecificOperations) {
 
   map.for_each([](auto& item) {
     using ItemType = std::decay_t<decltype(item)>;
-    if constexpr (std::is_same_v<typename ItemType::val_t, int>) {
+    if constexpr (std::same_as<typename ItemType::val_t, int>) {
       item.val += 100;
-    } else if constexpr (std::is_same_v<typename ItemType::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename ItemType::val_t, std::string>) {
       item.val = "modified_" + item.val;
     }
   });
@@ -171,9 +171,9 @@ TEST_F(StaticMapForEachTest, ForEachTemplateLambda) {
   smap::StaticMap<IntItem1, StringItem> map(IntItem1(42), StringItem("hello"));
 
   map.for_each([]<class T>(T& item) {
-    if constexpr (std::is_same_v<typename T::val_t, int>) {
+    if constexpr (std::same_as<typename T::val_t, int>) {
       item.val *= 2;
-    } else if constexpr (std::is_same_v<typename T::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename T::val_t, std::string>) {
       item.val += "!";
     }
   });
@@ -233,7 +233,7 @@ TEST_F(StaticMapForEachTest, ForEachStdInvocableCheck) {
 TEST_F(StaticMapForEachTest, ForEachChaining) {
   smap::StaticMap<IntItem1, IntItem2> map(IntItem1(1), IntItem2(2));
 
-  static_assert(std::is_same_v<smap::StaticMap<IntItem1, IntItem2>&,
+  static_assert(std::same_as<smap::StaticMap<IntItem1, IntItem2>&,
       decltype(map.for_each([](auto& item) {}))>);
 }
 
@@ -344,9 +344,9 @@ TEST_F(StaticMapForEachConstTest, ForEachConstTypeSpecificOperations) {
 
   map.for_each([&int_sum, &string_value](const auto& item) {
     using ItemType = std::decay_t<decltype(item)>;
-    if constexpr (std::is_same_v<typename ItemType::val_t, int>) {
+    if constexpr (std::same_as<typename ItemType::val_t, int>) {
       int_sum = item.val;
-    } else if constexpr (std::is_same_v<typename ItemType::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename ItemType::val_t, std::string>) {
       string_value = item.val;
     }
   });
@@ -366,9 +366,9 @@ TEST_F(StaticMapForEachConstTest, ForEachConstTemplateLambda) {
   });
 
   map.for_each([&int_value, &string_value]<class T>(const T& item) {
-    if constexpr (std::is_same_v<typename T::val_t, int>) {
+    if constexpr (std::same_as<typename T::val_t, int>) {
       int_value = item.val;
-    } else if constexpr (std::is_same_v<typename T::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename T::val_t, std::string>) {
       string_value = item.val;
     }
   });
@@ -504,12 +504,12 @@ TEST_F(StaticMapForEachConstTest, ForEachConstStructuredBindingLike) {
 
   map.for_each([&found_key, &found_value, &found_string](const auto& item) {
     using ItemType = std::decay_t<decltype(item)>;
-    if constexpr (std::is_same_v<typename ItemType::val_t, int>) {
+    if constexpr (std::same_as<typename ItemType::val_t, int>) {
       if (item.key == 1) {
         found_key = item.key;
         found_value = item.val;
       }
-    } else if constexpr (std::is_same_v<typename ItemType::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename ItemType::val_t, std::string>) {
       found_string = item.val;
     }
   });

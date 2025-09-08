@@ -116,11 +116,11 @@ TEST(StaticMapIteratorTest, RangeBasedForLoop) {
   int index = 0;
   for (auto it = map.begin(); it != map.end(); ++it) {
     it.visit([index, &results](const auto& item) {
-      if constexpr (std::is_same_v<decltype(item.val), int>) {
+      if constexpr (std::same_as<decltype(item.val), int>) {
         results.push_back({index, item.val});
-      } else if constexpr (std::is_same_v<decltype(item.val), char>) {
+      } else if constexpr (std::same_as<decltype(item.val), char>) {
         results.push_back({index, item.val});
-      } else if constexpr (std::is_same_v<decltype(item.val), double>) {
+      } else if constexpr (std::same_as<decltype(item.val), double>) {
         results.push_back({index, item.val});
       }
     });

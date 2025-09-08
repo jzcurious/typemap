@@ -55,7 +55,7 @@ struct StaticMapIterator {
   }
 
   template <class FuncT>
-    requires std::is_invocable_v<FuncT,
+    requires std::invocable<FuncT,
         typename std::tuple_element_t<0, typename smap_t::items_t>>
   void visit(FuncT&& func) const {
     _visit(std::forward<FuncT>(func), std::make_index_sequence<StaticMapT::size>{});

@@ -101,8 +101,8 @@ TEST_F(ItemIsCompatibleTest, BooleanReturnValues) {
   auto compatible_result = IntItem1::template is_compatible<DoubleItem1>();
   auto incompatible_result = IntItem1::template is_compatible<IntItem2>();
 
-  static_assert(std::is_same_v<decltype(compatible_result), bool>);
-  static_assert(std::is_same_v<decltype(incompatible_result), bool>);
+  static_assert(std::same_as<decltype(compatible_result), bool>);
+  static_assert(std::same_as<decltype(incompatible_result), bool>);
 
   EXPECT_TRUE(compatible_result);
   EXPECT_FALSE(incompatible_result);

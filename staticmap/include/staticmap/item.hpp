@@ -32,9 +32,9 @@ struct Item {
 
   template <ItemKind ItemT>
   static constexpr bool is_compatible() {
-    return std::is_same_v<typename ItemT::key_t, key_t> and ItemT::key == key
-           and (std::is_convertible_v<typename ItemT::val_t, val_t>
-                or std::is_convertible_v<val_t, typename ItemT::val_t>);
+    return std::same_as<typename ItemT::key_t, key_t> and ItemT::key == key
+           and (std::convertible_to<typename ItemT::val_t, val_t>
+                or std::convertible_to<val_t, typename ItemT::val_t>);
   }
 
   template <class ItemT>

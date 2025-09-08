@@ -114,8 +114,7 @@ TEST_F(StaticMapItemsTest, ItemsType) {
 
   auto& items = map.items();
 
-  static_assert(
-      std::is_same_v<decltype(items), std::tuple<IntItem1, IntItem2, IntItem3>&>);
+  static_assert(std::same_as<decltype(items), std::tuple<IntItem1, IntItem2, IntItem3>&>);
 }
 
 TEST_F(StaticMapItemsTest, ConstItemsType) {
@@ -123,7 +122,7 @@ TEST_F(StaticMapItemsTest, ConstItemsType) {
 
   const auto& items = map.items();
 
-  static_assert(std::is_same_v<decltype(items), const std::tuple<IntItem1, IntItem2>&>);
+  static_assert(std::same_as<decltype(items), const std::tuple<IntItem1, IntItem2>&>);
 }
 
 TEST_F(StaticMapItemsTest, ItemsSize) {

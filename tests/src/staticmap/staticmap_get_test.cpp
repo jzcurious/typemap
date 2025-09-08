@@ -155,9 +155,9 @@ TEST_F(StaticMapGetTest, GetTypeDeduction) {
   auto val2 = map.template get<'a'>();  // Should deduce to std::string
   auto val3 = map.template get<2>(3.14);  // Should deduce to double
 
-  static_assert(std::is_same_v<decltype(val1), int>);
-  static_assert(std::is_same_v<decltype(val2), std::string>);
-  static_assert(std::is_same_v<decltype(val3), double>);
+  static_assert(std::same_as<decltype(val1), int>);
+  static_assert(std::same_as<decltype(val2), std::string>);
+  static_assert(std::same_as<decltype(val3), double>);
 
   EXPECT_EQ(val1, 42);
   EXPECT_EQ(val2, "hello");

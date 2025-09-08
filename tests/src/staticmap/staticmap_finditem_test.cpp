@@ -139,8 +139,8 @@ TEST_F(StaticMapFindItemTest, FindResultConversionToSizeT) {
 //   EXPECT_EQ(result.index, 0);
 
 //   // Test that the struct has the expected members
-//   static_assert(std::is_same_v<decltype(result.found), const bool>);
-//   static_assert(std::is_same_v<decltype(result.index), const std::size_t>);
+//   static_assert(std::same_as<decltype(result.found), const bool>);
+//   static_assert(std::same_as<decltype(result.index), const std::size_t>);
 // }
 
 TEST_F(StaticMapFindItemTest, FindSameKeyDifferentMaps) {

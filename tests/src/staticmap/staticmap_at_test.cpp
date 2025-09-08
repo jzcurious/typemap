@@ -142,8 +142,8 @@ TEST_F(StaticMapAtTest, AtTypeDeduction) {
   auto& int_ref = map.template at<1>();
   auto& string_ref = map.template at<'a'>();
 
-  static_assert(std::is_same_v<decltype(int_ref), int&>);
-  static_assert(std::is_same_v<decltype(string_ref), std::string&>);
+  static_assert(std::same_as<decltype(int_ref), int&>);
+  static_assert(std::same_as<decltype(string_ref), std::string&>);
 
   EXPECT_EQ(int_ref, 42);
   EXPECT_EQ(string_ref, "hello");
@@ -155,8 +155,8 @@ TEST_F(StaticMapAtTest, AtConstTypeDeduction) {
   const auto& int_ref = map.template at<1>();
   const auto& string_ref = map.template at<'a'>();
 
-  static_assert(std::is_same_v<decltype(int_ref), const int&>);
-  static_assert(std::is_same_v<decltype(string_ref), const std::string&>);
+  static_assert(std::same_as<decltype(int_ref), const int&>);
+  static_assert(std::same_as<decltype(string_ref), const std::string&>);
 
   EXPECT_EQ(int_ref, 42);
   EXPECT_EQ(string_ref, "hello");

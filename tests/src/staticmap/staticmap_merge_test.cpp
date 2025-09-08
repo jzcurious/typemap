@@ -30,7 +30,7 @@ TEST_F(StaticMapMergeTest, MergeTwoNonEmptyMaps) {
 TEST_F(StaticMapMergeTest, MergeWithEmptyMap) {
   auto result = test_map1.merge(empty_map);
 
-  static_assert(std::is_same_v<decltype(result), TestMap>);
+  static_assert(std::same_as<decltype(result), TestMap>);
 
   EXPECT_EQ(result.get<10>(), 100);
   EXPECT_EQ(result.get<20>(), 'A');
@@ -40,7 +40,7 @@ TEST_F(StaticMapMergeTest, MergeWithEmptyMap) {
 TEST_F(StaticMapMergeTest, MergeEmptyMapWithNonEmpty) {
   auto result = empty_map.merge(test_map1);
 
-  static_assert(std::is_same_v<decltype(result), TestMap>);
+  static_assert(std::same_as<decltype(result), TestMap>);
 
   EXPECT_EQ(result.get<10>(), 100);
   EXPECT_EQ(result.get<20>(), 'A');
@@ -50,13 +50,13 @@ TEST_F(StaticMapMergeTest, MergeEmptyMapWithNonEmpty) {
 TEST_F(StaticMapMergeTest, MergeTwoEmptyMaps) {
   auto result = empty_map.merge(empty_map);
 
-  static_assert(std::is_same_v<decltype(result), EmptyMap>);
+  static_assert(std::same_as<decltype(result), EmptyMap>);
 }
 
 TEST_F(StaticMapMergeTest, MergeWithRValue) {
   auto result = test_map1.merge(TestMap{300, 'C', 1.41});
 
-  static_assert(std::is_same_v<decltype(result), TestMap>);
+  static_assert(std::same_as<decltype(result), TestMap>);
 
   EXPECT_EQ(result.get<10>(), 300);
   EXPECT_EQ(result.get<20>(), 'C');

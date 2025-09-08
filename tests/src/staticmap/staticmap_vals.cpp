@@ -146,8 +146,8 @@ TEST_F(StaticMapValsTest, TupleElementTypes) {
 
   auto vals = map.vals();
 
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(vals)>, int&>);
-  static_assert(std::is_same_v<std::tuple_element_t<1, decltype(vals)>, std::string&>);
+  static_assert(std::same_as<std::tuple_element_t<0, decltype(vals)>, int&>);
+  static_assert(std::same_as<std::tuple_element_t<1, decltype(vals)>, std::string&>);
 }
 
 TEST_F(StaticMapValsTest, ConstTupleElementTypes) {
@@ -155,9 +155,9 @@ TEST_F(StaticMapValsTest, ConstTupleElementTypes) {
 
   auto vals = map.vals();
 
-  static_assert(std::is_same_v<std::tuple_element_t<0, decltype(vals)>, const int&>);
+  static_assert(std::same_as<std::tuple_element_t<0, decltype(vals)>, const int&>);
   static_assert(
-      std::is_same_v<std::tuple_element_t<1, decltype(vals)>, const std::string&>);
+      std::same_as<std::tuple_element_t<1, decltype(vals)>, const std::string&>);
 }
 
 TEST_F(StaticMapValsTest, PerformanceTest) {

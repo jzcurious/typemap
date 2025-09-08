@@ -164,7 +164,7 @@ TEST_F(StaticMapClearTest, ClearLargeStrings) {
 TEST_F(StaticMapClearTest, ClearReturn) {
   smap::StaticMap<IntItem1> map(IntItem1(42));
 
-  static_assert(std::is_same_v<smap::StaticMap<IntItem1>&, decltype(map.clear())>);
+  static_assert(std::same_as<smap::StaticMap<IntItem1>&, decltype(map.clear())>);
   EXPECT_NO_THROW(map.clear());
 }
 

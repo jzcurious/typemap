@@ -206,7 +206,7 @@ TEST_F(ItemEqualityTest, ReturnValueType) {
 
   auto result = (item1 == item2);
 
-  static_assert(std::is_same_v<decltype(result), bool>);
+  static_assert(std::same_as<decltype(result), bool>);
   EXPECT_TRUE(result);
 }
 

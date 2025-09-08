@@ -32,10 +32,9 @@ struct StaticMap {
   StaticMap() = default;
 
   template <class... T>
-    requires(
-        ((std::is_same_v<ItemT, T> or std::is_convertible_v<T, typename ItemT::key_t>)
-            and ...)
-        and all_unique_keys<ItemT::key...>() and sizeof...(T) == sizeof...(ItemT))
+    requires(((std::same_as<ItemT, T> or std::convertible_to<T, typename ItemT::key_t>)
+                 and ...)
+             and all_unique_keys<ItemT::key...>() and sizeof...(T) == sizeof...(ItemT))
   StaticMap(T&&... args)
       : items_(std::forward<T>(args)...) {}
 

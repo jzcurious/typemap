@@ -92,9 +92,9 @@ TEST_F(StaticMapForEachIndexedConstTest, ForEachIndexedConstMixedTypes) {
 
   map.for_each_indexed([&results](std::size_t index, const auto& item) {
     using ItemType = std::decay_t<decltype(item)>;
-    if constexpr (std::is_same_v<typename ItemType::val_t, int>) {
+    if constexpr (std::same_as<typename ItemType::val_t, int>) {
       results.emplace_back(index, "int:" + std::to_string(item.val));
-    } else if constexpr (std::is_same_v<typename ItemType::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename ItemType::val_t, std::string>) {
       results.emplace_back(index, "string:" + item.val);
     }
   });
@@ -284,7 +284,7 @@ TEST_F(StaticMapForEachIndexedConstTest, ForEachIndexedConstReturnValue) {
 
   // for_each_indexed returns const reference to *this
   static_assert(
-      std::is_same_v<decltype(map.for_each_indexed([](std::size_t, const auto&) {})),
+      std::same_as<decltype(map.for_each_indexed([](std::size_t, const auto&) {})),
           const smap::StaticMap<IntItem1>&>);
 
   auto& result = map.for_each_indexed(
@@ -305,13 +305,13 @@ TEST_F(StaticMapForEachIndexedConstTest, ForEachIndexedConstStructuredBindingLik
   map.for_each_indexed([&found_key, &found_value, &found_string, &found_index](
                            std::size_t index, const auto& item) {
     using ItemType = std::decay_t<decltype(item)>;
-    if constexpr (std::is_same_v<typename ItemType::val_t, int>) {
+    if constexpr (std::same_as<typename ItemType::val_t, int>) {
       if (item.key == 1) {
         found_key = item.key;
         found_value = item.val;
         found_index = index;
       }
-    } else if constexpr (std::is_same_v<typename ItemType::val_t, std::string>) {
+    } else if constexpr (std::same_as<typename ItemType::val_t, std::string>) {
       found_string = item.val;
     }
   });

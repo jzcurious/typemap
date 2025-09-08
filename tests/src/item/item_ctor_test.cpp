@@ -77,9 +77,9 @@ TEST_F(ItemConstructorTest, TypeDeduction) {
   auto string_item = smap::Item<'a', std::string>("hello");
   auto double_item = smap::Item<3.14, double>(2.718);  // NOLINT
 
-  static_assert(std::is_same_v<decltype(int_item.val), int>);
-  static_assert(std::is_same_v<decltype(string_item.val), std::string>);
-  static_assert(std::is_same_v<decltype(double_item.val), double>);
+  static_assert(std::same_as<decltype(int_item.val), int>);
+  static_assert(std::same_as<decltype(string_item.val), std::string>);
+  static_assert(std::same_as<decltype(double_item.val), double>);
 
   EXPECT_EQ(int_item.val, 42);
   EXPECT_EQ(string_item.val, "hello");

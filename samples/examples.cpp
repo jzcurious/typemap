@@ -42,10 +42,9 @@ void basic_usage_example() {
       smap::Item<"app_name"_fs, std::string>("MyApp"),
       smap::Item<"version"_fs, double>(1.5));
 
-  std::cout << "App: " << config.template at<"app_name"_fs>() << " v"
-            << config.template at<"version"_fs>() << std::endl;
-  std::cout << "Debug mode: " << (config.template at<"debug"_fs>() ? "ON" : "OFF")
+  std::cout << "App: " << config.at<"app_name"_fs>() << " v" << config.at<"version"_fs>()
             << std::endl;
+  std::cout << "Debug mode: " << (config.at<"debug"_fs>() ? "ON" : "OFF") << std::endl;
 }
 
 // Example 2: Compiler as feature configuration
@@ -57,14 +56,13 @@ void feature_flags_example() {
       smap::Item<"logging_level"_fs, int>(2));
 
   // Feature checking
-  if constexpr (features.template contains<"new_ui"_fs>()) {
-    std::cout << "New UI is "
-              << (features.template at<"new_ui"_fs>() ? "enabled" : "disabled")
+  if constexpr (features.contains<"new_ui"_fs>()) {
+    std::cout << "New UI is " << (features.at<"new_ui"_fs>() ? "enabled" : "disabled")
               << std::endl;
   }
 
   // Batch checking
-  if constexpr (features.template contains_all<"new_ui"_fs, "logging_level"_fs>()) {
+  if constexpr (features.contains_all<"new_ui"_fs, "logging_level"_fs>()) {
     std::cout << "Core features are available\n";
   }
 }
@@ -79,12 +77,11 @@ void http_status_example() {
       smap::Item<403, std::string>("Forbidden"));
 
   // Safe access with default values
-  std::cout << "Status 200: " << http_messages.template get<200>() << std::endl;
-  std::cout << "Status 999: " << http_messages.template get<999>("Unknown") << std::endl;
+  std::cout << "Status 200: " << http_messages.get<200>() << std::endl;
+  std::cout << "Status 999: " << http_messages.get<999>("Unknown") << std::endl;
 
   // Existence checking
-  std::cout << "Has 404: " << (http_messages.template contains<404>() ? "Yes" : "No")
-            << std::endl;
+  std::cout << "Has 404: " << (http_messages.contains<404>() ? "Yes" : "No") << std::endl;
 }
 
 // Example 4: Mathematical constants
@@ -98,7 +95,7 @@ void math_constants_example() {
   // Iteration over all elements
   constants.for_each([](const auto& item) {
     using ValueType = typename std::decay_t<decltype(item)>::val_t;
-    if constexpr (std::is_same_v<ValueType, double>) {
+    if constexpr (std::same_as<ValueType, double>) {
       std::cout << item.key << " = " << item.val << std::endl;
     }
   });
@@ -121,8 +118,8 @@ void state_machine_example() {
 
   // Simulate transition
   constexpr auto key = std::make_pair(State::IDLE, Event::START);
-  if constexpr (transitions.template contains<key>()) {
-    current_state = transitions.template at<key>();
+  if constexpr (transitions.contains<key>()) {
+    current_state = transitions.at<key>();
     std::cout << "New state: " << static_cast<int>(current_state) << std::endl;
   }
 }
@@ -169,7 +166,7 @@ void user_profiles_example() {
   });
 
   // Getting profile
-  const auto& alice = profiles.template at<1>();
+  const auto& alice = profiles.at<1>();
   std::cout << alice.name << " has permissions: ";
   for (const auto& perm : alice.permissions) {
     std::cout << perm << " ";

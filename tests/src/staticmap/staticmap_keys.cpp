@@ -74,7 +74,7 @@ TEST_F(StaticMapKeysTest, KeysType) {
 
   constexpr const auto& keys = map.keys();
 
-  static_assert(std::is_same_v<decltype(keys), const std::tuple<int, int, int>&>);
+  static_assert(std::same_as<decltype(keys), const std::tuple<int, int, int>&>);
 }
 
 TEST_F(StaticMapKeysTest, KeysTupleSize) {
