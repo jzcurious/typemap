@@ -170,7 +170,9 @@ struct StaticMap {
     return at<key>() = std::forward<ValT>(value);
   }
 
-  auto& clear() {
+  auto& clear()
+    requires(std::is_default_constructible_v<typename ItemT::val_t> and ...)
+  {
     std::apply(
         [](auto&... items) { ((items.val = typename ItemT::val_t{}), ...); }, items_);
     return *this;
