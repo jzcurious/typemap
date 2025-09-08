@@ -200,6 +200,14 @@ struct StaticMap {
     }(std::make_index_sequence<size>{});
   }
 
+  auto begin() const {
+    return StaticMapIterator(*this);
+  }
+
+  auto end() const {
+    return StaticMapIterator(*this, size);
+  }
+
   auto begin() {
     return StaticMapIterator(*this);
   }

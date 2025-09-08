@@ -7,6 +7,11 @@
 
 namespace smap {
 
+template <class T>
+concept Comparable = requires(T x, T y) {
+  { x == y } -> std::convertible_to<bool>;
+};
+
 template <Comparable auto key_v, class ValT>
 struct Item {
   struct smap_item_explicit_feature {};
