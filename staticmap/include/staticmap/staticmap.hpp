@@ -179,25 +179,8 @@ struct StaticMap {
     return *this;
   }
 
-  // template <class FuncT>
-  // void for_each(FuncT&& func) {  // TODO: test it
-  //   static_assert((std::invocable<std::decay_t<FuncT>, ItemT&> && ...),
-  //       "Function must be invocable with each item in the static map");
-  //   std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); },
-  //   items_);
-  // }
-
-  // template <class FuncT>
-  // void for_each(FuncT&& func) const {  // TODO: test it
-  //   static_assert((std::invocable<std::decay_t<FuncT>, const ItemT&> and ...),
-  //       "Function must be invocable with each item in the static map");
-  //   std::apply(
-  //       [&](const auto&... items) { (std::forward<FuncT>(func)(items), ...); },
-  //       items_);
-  // }
-
   template <class FuncT>
-  auto& for_each(FuncT&& func) {  // TODO: test it
+  auto& for_each(FuncT&& func) {
     static_assert((std::invocable<std::decay_t<FuncT>, ItemT&> && ...),
         "Function must be invocable with each item in the static map");
     std::apply([&](auto&... items) { (std::forward<FuncT>(func)(items), ...); }, items_);
@@ -205,7 +188,7 @@ struct StaticMap {
   }
 
   template <class FuncT>
-  auto& for_each(FuncT&& func) const {  // TODO: test it
+  const auto& for_each(FuncT&& func) const {
     static_assert((std::invocable<std::decay_t<FuncT>, const ItemT&> and ...),
         "Function must be invocable with each item in the static map");
     std::apply(
@@ -214,23 +197,25 @@ struct StaticMap {
   }
 
   template <class FuncT>
-  void for_each_indexed(FuncT&& func) {  // TODO: test it
+  auto& for_each_indexed(FuncT&& func) {
     static_assert((std::invocable<std::decay_t<FuncT>, std::size_t, ItemT&> && ...),
         "Function must be invocable with each item in the static map");
 
     [&]<std::size_t... i>(std::index_sequence<i...>) {
       (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
     }(std::make_index_sequence<size>{});
+    return *this;
   }
 
   template <class FuncT>
-  void for_each_indexed(FuncT&& func) const {  // TODO: test it
+  const auto& for_each_indexed(FuncT&& func) const {
     static_assert(
         (std::invocable<std::decay_t<FuncT>, std::size_t, const ItemT&> and ...),
         "Function must be invocable with each item in the static map");
     [&]<std::size_t... i>(std::index_sequence<i...>) {
       (std::forward<FuncT>(func)(i, std::get<i>(items_)), ...);
     }(std::make_index_sequence<size>{});
+    return *this;
   }
 
   auto begin() const {
