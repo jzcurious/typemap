@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 project(staticmap LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-include(../cmake/colored_output.cmake)
-
 add_library(staticmap INTERFACE)
 
 target_include_directories(staticmap INTERFACE
@@ -18,5 +14,3 @@ target_compile_features(staticmap INTERFACE
 target_compile_options(staticmap INTERFACE
     -Wall -O3
 )
-
-set_target_colored_output(staticmap INTERFACE)

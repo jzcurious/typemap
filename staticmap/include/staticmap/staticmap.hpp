@@ -10,8 +10,6 @@
 
 namespace smap {
 
-// TODO: add hash function
-
 template <ItemKind... ItemT>
 struct StaticMap {
  public:
@@ -109,8 +107,7 @@ struct StaticMap {
 
  private:
   template <auto key, std::size_t... i>
-  static constexpr find_result_t find_item_impl(
-      std::index_sequence<i...>) {  // TODO: replace to binary search
+  static constexpr find_result_t find_item_impl(std::index_sequence<i...>) {
     if constexpr (sizeof...(i) == 0) {
       return {false, 0};
     } else {

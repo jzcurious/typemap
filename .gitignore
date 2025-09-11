@@ -192,3 +192,6 @@ data/
 
 # Reports
 reports_html/
+
+# CMake
+CMakeUserPresets.json

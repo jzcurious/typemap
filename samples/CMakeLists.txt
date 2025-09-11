@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 project(staticmap_samples LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 file(GLOB_RECURSE SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
