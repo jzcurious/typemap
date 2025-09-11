@@ -292,7 +292,8 @@ struct StaticMap {
       std::apply(
           [&](const auto&... items) {
             (([&]() {
-              constexpr auto key = items.key;
+              constexpr auto key = items.key;  // g++: ok, clang++: failed
+              // constexpr auto key = ItemT::key;
               constexpr auto find_result = find_item<key>();
               if constexpr (find_result.found) {
                 if (std::get<find_result.index>(items_).val != items.val) result = false;
