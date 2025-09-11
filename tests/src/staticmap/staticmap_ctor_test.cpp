@@ -61,7 +61,7 @@ TEST_F(StaticMapTest, MixedValueTypes) {
 }
 
 TEST_F(StaticMapTest, UniqueKeysConstraint) {
-  smap::StaticMap<IntItem1, IntItem2, IntItem3> map;  // NOLINT
+  [[maybe_unused]] smap::StaticMap<IntItem1, IntItem2, IntItem3> map;
   SUCCEED();
 }
 

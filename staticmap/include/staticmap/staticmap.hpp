@@ -239,7 +239,8 @@ struct StaticMap {
   StaticMap& update(ItemTT&&... items) {
     (
         [&]() {
-          constexpr auto result = find_item<items.key>();
+          // constexpr auto result = find_item<items.key>(); // OK with g++
+          constexpr auto result = find_item<std::decay_t<ItemTT>::key>();
           if constexpr (result) {
             std::get<result.index>(items_).val = std::forward<ItemTT>(items).val;
           }
@@ -255,7 +256,8 @@ struct StaticMap {
         [&](auto&&... items) {
           (
               [&]() {
-                constexpr auto result = find_item<items.key>();
+                // constexpr auto result = find_item<items.key>(); // OK with g++
+                constexpr auto result = find_item<std::decay_t<decltype(items)>::key>();
                 if constexpr (result) {
                   std::get<result.index>(items_).val
                       = std::forward<decltype(items)>(items).val;
@@ -292,8 +294,8 @@ struct StaticMap {
       std::apply(
           [&](const auto&... items) {
             (([&]() {
-              constexpr auto key = items.key;  // g++: ok, clang++: failed
-              // constexpr auto key = ItemT::key;
+              // constexpr auto key = items.key;  // OK with g++
+              constexpr auto key = std::decay_t<decltype(items)>::key;
               constexpr auto find_result = find_item<key>();
               if constexpr (find_result.found) {
                 if (std::get<find_result.index>(items_).val != items.val) result = false;

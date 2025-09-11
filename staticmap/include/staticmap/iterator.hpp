@@ -65,10 +65,12 @@ struct StaticMapIterator {
   template <class FuncT, std::size_t... i>
     requires((i < smap_t::size) and ...)
   constexpr void _visit(FuncT&& func, std::index_sequence<i...>) const {
-    ((index_ == i
-             ? ((void)std::forward<FuncT>(func)(std::get<i>(smap_.get().items())), true)
-             : false)
-        or ...);
+    [[maybe_unused]] auto _
+        = ((index_ == i
+                   ? ((void)std::forward<FuncT>(func)(std::get<i>(smap_.get().items())),
+                         true)
+                   : false)
+            or ...);
   }
 };
 
